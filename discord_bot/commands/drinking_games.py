@@ -10,7 +10,6 @@ class DrinkingGamesCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.counter = 0
-        self.audio_path = 'static/audio/Powerhour_beat.mp3'
 
     @commands.command(name='powerhour', help='The bot will joing you vocal channel and play a powerhour')
     async def powerhour(self, ctx, op_1: str = "start"):
@@ -50,11 +49,13 @@ class DrinkingGamesCommands(commands.Cog):
         await ctx.send(f"You have drank {self.counter} swigs")
 
     async def play_repeat_audio(self, vc):
+        # @TODO LULU add a way to have different beat for the power hour
         while True:
+            audio_path = 'static/audio/Powerhour_beat.mp3'
             if self.counter % 60 == 0 and self.counter != 0:
-                self.audio_path = 'static/audio/Powerhour_oh_no.mp3'
+                audio_path = 'static/audio/Powerhour_oh_no.mp3'
 
-            audio_source = discord.FFmpegPCMAudio(self.audio_path)
+            audio_source = discord.FFmpegPCMAudio(audio_path)
             if not vc.is_playing():
                 vc.play(audio_source, after=None)
                 self.counter += 1
