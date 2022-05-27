@@ -5,6 +5,8 @@ services:
         volumes:
             - ./discord_bot/:/app
         restart: always
+        environment:
+          - PYTHONUNBUFFERED=1
         env_file:
           - .env
         ports:
