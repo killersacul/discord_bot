@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 from discord.ext import commands
 
@@ -8,14 +9,14 @@ def start_client():
     TOKEN = os.getenv('DISCORD_TOKEN')
     bot = commands.Bot(command_prefix='!')
 
-    cog_files = ['commands.basic']
+    cog_files = ['commands.basic', 'commands.drinking_games']
     for cog_file in cog_files:
         bot.load_extension(cog_file)
-        logging.warning(f"{cog_file} has loaded.")
+        print(f"{cog_file} has loaded.")
 
     @bot.event
     async def on_ready():
-        logging.warning(f'{bot.user.name} has connected to Discord!')
+        print(f'{bot.user.name} has connected to Discord!')
 
     bot.run(TOKEN)
 
