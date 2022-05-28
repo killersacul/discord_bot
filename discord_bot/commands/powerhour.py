@@ -37,6 +37,7 @@ class PowerHourCommands(commands.Cog):
                 await self.play_repeat_audio(vc)
 
     async def stop_powerhour(self, ctx):
+        # @TODO LULU need to make sure the bot is connected to the same voice channel as the user asking to stop. 
         if not self.is_connected(ctx):
             await ctx.send("I am not in a voice channel")
         else:
