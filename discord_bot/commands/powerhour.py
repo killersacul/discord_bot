@@ -52,6 +52,7 @@ class PowerHourCommands(commands.Cog):
         await ctx.send(f"You have drank {self.counter} swigs")
 
     async def play_repeat_audio(self, vc):
+        # @TODO LULU handle the warning about the biterate for the duration of the file
         # @TODO LULU add a way to have different beat for the power hour
         #            and have a command to list them and change ofc.
         while True:
