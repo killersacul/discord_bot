@@ -9,7 +9,7 @@ def start_client():
     TOKEN = os.getenv('DISCORD_TOKEN')
     bot = commands.Bot(command_prefix='!')
 
-    cog_files = ['commands.basic', 'commands.drinking_games']
+    cog_files = ['commands.basic', 'commands.powerhour']
     for cog_file in cog_files:
         bot.load_extension(cog_file)
         print(f"{cog_file} has loaded.")
