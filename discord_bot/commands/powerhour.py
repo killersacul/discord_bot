@@ -6,7 +6,6 @@ from discord.ext import commands
 
 
 class PowerHourCommands(commands.Cog):
-    # @TODO LULU Make it so that an admin can override the current channel the power is in.
     # @TODO LULU Make it so if an user leave and is the last user apart from the bot the bot leaves.
     # @IDEA LULU have it so each user has the total powerhour done stored by the bot.
 
@@ -24,17 +23,24 @@ class PowerHourCommands(commands.Cog):
         await function_to_call(ctx)
 
     async def start_powerhour(self, ctx):
+        # do we want to powerhour to restart when the bot joins a new channel???
         if not (ctx.author.voice):
             await ctx.send("I cannot join you as you are not in a voice channel")
-        else:
-            if self.is_connected(ctx):
-                await ctx.send("I am already in a voice channel")
-            else:
-                await self.update_bot_status(f"Powerhour counter: {self.counter}")
-                channel = ctx.author.voice.channel
-                vc = await channel.connect()
-                await sleep(1)
-                await self.play_repeat_audio(vc)
+            return
+
+        if self.is_connected(ctx) and not ctx.author.guild_permissions.administrator:
+            await ctx.send("I am already in a voice channel")
+            return
+
+        elif self.is_connected(ctx) and ctx.author.guild_permissions.administrator:
+            vc = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
+            await vc.disconnect()
+
+        await self.update_bot_status(f"Powerhour counter: {self.counter}")
+        channel = ctx.author.voice.channel
+        vc = await channel.connect()
+        await sleep(1)
+        await self.play_repeat_audio(vc)
 
     async def stop_powerhour(self, ctx):
         # @TODO LULU need to make sure the bot is connected to the same voice channel as the user asking to stop. 
