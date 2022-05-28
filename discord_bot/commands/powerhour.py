@@ -53,7 +53,7 @@ class PowerHourCommands(commands.Cog):
         await ctx.send(f"You have drank {self.counter} swigs")
 
     async def play_repeat_audio(self, vc):
-        # @TODO LULU handle the warning about the biterate for the duration of the file
+        # @TODO LULU find a way to get the sound duration for the timing
         # @TODO LULU add a way to have different beat for the power hour
         #            and have a command to list them and change ofc.
         while True:
@@ -61,7 +61,7 @@ class PowerHourCommands(commands.Cog):
             if self.counter % 60 == 0 and self.counter != 0:
                 audio_path = 'static/audio/Powerhour_oh_no.mp3'
 
-            audio_source = discord.FFmpegPCMAudio(audio_path)
+            audio_source = discord.FFmpegPCMAudio(audio_path, options="-loglevel panic")
             if not vc.is_playing():
                 vc.play(audio_source, after=None)
                 self.counter += 1
