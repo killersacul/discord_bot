@@ -1,19 +1,21 @@
-import os
 from asyncio import sleep
 
 import discord
 from discord.ext import commands
 
+HELP_TEXT = 'The bot will joing you vocal channel and play a powerhour'
+
 
 class PowerHourCommands(commands.Cog):
-    # @TODO LULU Make it so if an user leave and is the last user apart from the bot the bot leaves.
     # @IDEA LULU have it so each user has the total powerhour done stored by the bot.
+    # @TODO LULU Add more sounds and a system to be able to change them.
 
     def __init__(self, client):
         self.client = client
         self.counter = 0
+        self.current_voice_channel = None
 
-    @commands.command(name='powerhour', help='The bot will joing you vocal channel and play a powerhour')
+    @commands.command(name='powerhour', help=HELP_TEXT)
     async def powerhour(self, ctx, op_1: str = "start"):
         op_1 = op_1.lower()
         function_to_call = getattr(self, f"{op_1}_powerhour", None)
@@ -36,18 +38,22 @@ class PowerHourCommands(commands.Cog):
             vc = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
             await vc.disconnect()
 
-        await self.update_bot_status(f"Powerhour counter: {self.counter}")
         channel = ctx.author.voice.channel
+        print(channel)
         vc = await channel.connect()
+        self.current_voice_channel = vc
+        self.client.loop.create_task(self.check_if_channel_empty())
         await sleep(1)
+        await self.update_bot_status(f"Powerhour counter: {self.counter}")
         await self.play_repeat_audio(vc)
 
     async def stop_powerhour(self, ctx):
-        # @TODO LULU need to make sure the bot is connected to the same voice channel as the user asking to stop. 
+        # @TODO LULU need to make sure the bot is connected to the same voice channels as the user asking to stop.
         if not self.is_connected(ctx):
             await ctx.send("I am not in a voice channel")
         else:
             vc = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
+            self.current_voice_channel = None
             await vc.disconnect()
             await self.update_bot_status("")
 
@@ -77,8 +83,21 @@ class PowerHourCommands(commands.Cog):
     async def update_bot_status(self, msg):
         await self.client.change_presence(activity=discord.Game(name=msg))
 
+    async def check_if_channel_empty(self):
+        await self.client.wait_until_ready()
+        while True:
+            print(self.current_voice_channel.channel.members)
+            if all([member.bot for member in self.current_voice_channel.channel.members]):
+                await self.current_voice_channel.disconnect()
+                self.current_voice_channel = None
+                break
+            await sleep(60)
+
     def is_connected(self, ctx):
         return discord.utils.get(self.client.voice_clients, guild=ctx.guild)
+
+    def get_stored_data(self):
+        raise NotImplementedError
 
 
 def setup(client):
