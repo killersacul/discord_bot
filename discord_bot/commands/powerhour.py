@@ -11,8 +11,9 @@ class PowerHourCommands(commands.Cog):
     # @TODO LULU Add more sounds and a system to be able to change them.
 
     def __init__(self, client):
+        self.name = "powerhour"
         self.client = client
-        self.counter = 0
+        self.counter = self.get_counter()
         self.current_voice_channel = None
 
     @commands.command(name='powerhour', help=HELP_TEXT)
@@ -35,11 +36,11 @@ class PowerHourCommands(commands.Cog):
             return
 
         elif self.is_connected(ctx) and ctx.author.guild_permissions.administrator:
+            self.counter = self.get_counter()
             vc = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
             await vc.disconnect()
 
         channel = ctx.author.voice.channel
-        print(channel)
         vc = await channel.connect()
         self.current_voice_channel = vc
         self.client.loop.create_task(self.check_if_channel_empty())
@@ -77,6 +78,7 @@ class PowerHourCommands(commands.Cog):
             if not vc.is_playing():
                 vc.play(audio_source, after=None)
                 self.counter += 1
+                self.write_counter(self.counter)
                 await self.update_bot_status(f"Powerhour counter: {self.counter}")
                 await sleep(55)
 
@@ -96,8 +98,11 @@ class PowerHourCommands(commands.Cog):
     def is_connected(self, ctx):
         return discord.utils.get(self.client.voice_clients, guild=ctx.guild)
 
-    def get_stored_data(self):
-        raise NotImplementedError
+    def get_counter(self) -> int:
+        return self.client.database.get_data(self.name, "counter")
+
+    def write_counter(self, counter_total: int):
+        self.client.database.write_data(self.name, "counter", counter_total)
 
 
 def setup(client):
