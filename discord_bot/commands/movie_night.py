@@ -1,10 +1,9 @@
-from datetime import date, datetime
 from typing import List
 
 from discord.ext import commands
-from utils.data import get_data, write_data
+from models import Movie
 
-HELP_TEXT = ''
+HELP_TEXT = 'A simple app to keep track of movie night ideas and what was watched'
 
 '''
 a simple app to help keep track of what films the movie crew has seen and what we would like to watch,
@@ -17,7 +16,7 @@ class BlindTestCommands(commands.Cog):
     command_name = "movie_night"
 
     def __init__(self, client):
-        self.name = "movie_night"
+        self.name = self.command_name
         self.client = client
 
     @commands.command(name='movie_night', help=HELP_TEXT)
@@ -44,7 +43,7 @@ class BlindTestCommands(commands.Cog):
         else:
             await ctx.send("Sorry you do not have a list yet")
 
-    async def add_movie_night(self, ctx, movie):
+    async def add_movie_night(self, ctx, movie: str):
         to_watch_list = self.get_to_watch()
         movie = Movie(movie, ctx.author.id)
         if to_watch_list is None:
@@ -59,7 +58,7 @@ class BlindTestCommands(commands.Cog):
         self.write_to_watch(to_watch_list)
         await ctx.send(f"I have added the movie {movie.name} to the list!")
 
-    async def remove_movie_night(self, ctx, movie):
+    async def remove_movie_night(self, ctx, movie: str):
         to_watch_list = self.get_to_watch()
         pos = None
         for idx, movie_object in enumerate(to_watch_list):
@@ -79,51 +78,14 @@ class BlindTestCommands(commands.Cog):
         raise NotImplementedError
 
     def get_to_watch(self) -> List["Movie"]:
-        to_watch_list = get_data(self.name, "to_watch")
+        to_watch_list = self.client.database.get_data(self.name, "to_watch")
         if to_watch_list is None:
             return []
         return [Movie.from_dict(movie) for movie in to_watch_list]
 
-    def write_to_watch(self, to_watch_list) -> List[dict]:
-        write_data(self.name, "to_watch", [movie.to_dict() for movie in to_watch_list])
+    def write_to_watch(self, to_watch_list: List[Movie]) -> List[dict]:
+        self.client.database.write_data(self.name, "to_watch", [movie.to_dict() for movie in to_watch_list])
 
 
 def setup(client):
     client.add_cog(BlindTestCommands(client))
-
-
-class Movie():
-
-    def __init__(self, name: str, added_by: int, added_on: datetime = date.today()):
-        self.name = name
-        self.added_on = added_on
-        self.added_by = added_by
-
-    def __str__(self) -> str:
-        return f"Movie({self.name})"
-
-    def __repr__(self) -> str:
-        return str(self)
-
-    @classmethod
-    def from_dict(cls, data_dict) -> "Movie":
-        return cls(
-            name=data_dict.get("name"),
-            added_on=date.fromisoformat(data_dict.get("added_on")),
-            added_by=data_dict.get("added_by"),
-        )
-
-    def get_username(self, client, ctx):
-        print(ctx.guild)
-        user = ctx.guild.get_member(user_id=self.added_by)
-        print(user)
-        if user is not None:
-            return user.display_name
-        return "User could not be found"
-
-    def to_dict(self) -> dict:
-        return {
-            "name": self.name,
-            "added_on": self.added_on.isoformat(),
-            "added_by": self.added_by,
-        }
