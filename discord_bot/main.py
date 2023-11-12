@@ -10,7 +10,7 @@ def start_client():
     TOKEN = os.getenv('DISCORD_TOKEN')
     bot = commands.Bot(command_prefix='!')
     setattr(bot, "database", DatabaseFactory.create("json"))
-    cog_files = ['commands.basic', 'commands.powerhour', 'commands.movie_night']
+    cog_files = ['commands.basic', 'commands.movie_night']
     for cog_file in cog_files:
         bot.load_extension(cog_file)
         print(f"{cog_file} has loaded.")
